@@ -110,7 +110,7 @@ int calcohesion(map<string, int>& characters, map<string, map<string, int> >& ca
 		int len = word.length();
 		switch (word.length() / CHARWIDTH) {
 			case 2:
-				candidates[word]["c"] = candidates[word]["n"] *1000 / (characters[word.substr(0, CHARWIDTH)] * characters[word.substr(CHARWIDTH, CHARWIDTH)]);
+				candidates[word]["c"] = candidates[word]["n"] *1000000 / (characters[word.substr(0, CHARWIDTH)] * characters[word.substr(CHARWIDTH, CHARWIDTH)]);
 				break;
 			case 3:
 			{
@@ -118,17 +118,19 @@ int calcohesion(map<string, int>& characters, map<string, map<string, int> >& ca
 				v1 = candidates[word]["n"] * candidates[word]["n"] * 1.0f / (count * candidates[word.substr(CHARWIDTH, CHARWIDTH*2)]);
 				count = characters[word.substr(2*CHARWIDTH, CHARWIDTH)];
 				v2 = candidates[word]["n"] * candidates[word]["n"] * 1.0f / (candidates[word.substr(0, 2*CHARWIDTH)] * count);
-				candidates[word]["c"] = v1 < v2 ? (int)(1000*v1) : (int)(1000*v2);
+				candidates[word]["c"] = v1 < v2 ? (int)(1000000*v1) : (int)(1000000*v2);
 			}
 			case 4:
 			v1 = candidates[word]["n"] * candidates[word]["n"] * 1.0f / (characters[word.substr(0, CHARWIDTH)] * candidats[word.substr(CHARWIDTH, 3*CHARWIDTH)]);
 			v2 = candidates[word]["n"] * candidates[word]["n"] * 1.0f / (characters[word.substr(0, 3*CHARWIDTH)] * candidats[word.substr(3*CHARWIDTH, CHARWIDTH)]);
-			candidates[word]["c"] = candidates[word]["n"] * candidates[word]["n"] * 1000 / (characters[word.substr(0, 2*CHARWIDTH)] * candidats[word.substr(2*CHARWIDTH, 2*CHARWIDTH)]);
+			candidates[word]["c"] = candidates[word]["n"] * candidates[word]["n"] * 1000000 / (characters[word.substr(0, 2*CHARWIDTH)] * candidats[word.substr(2*CHARWIDTH, 2*CHARWIDTH)]);
 			if (v1 > v2)
 				v1 = v2;
 			if (candidates[word]["c"] > v1)
-				candidates[word]["c"] = (int)(1000*v1);
+				candidates[word]["c"] = (int)(1000000*v1);
 		}
+	}
+	candidates[word]["c"] = sqrt(candidates[word]["c"]);
 	return 0;
 }
 
