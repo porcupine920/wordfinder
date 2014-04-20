@@ -1,3 +1,4 @@
+#include <cmath>
 #include <cstring>
 #include <map>
 #include <stdio.h>
@@ -103,9 +104,9 @@ int generatecandidates(map<string, int>& characters, map<string, map<string, int
 
 int calcohesion(map<string, int>& characters, map<string, map<string, int> >& candidates)
 {
-	map<string, int> >::iterator it;
+	map<string, map<string, int> >::iterator it;
 	for (it = candidates.begin(); it != candidates.end(); ++it) {
-		string word = it->firtst;
+		string word = it->first;
 		float v1, v2;
 		int len = word.length();
 		switch (word.length() / CHARWIDTH) {
@@ -115,22 +116,42 @@ int calcohesion(map<string, int>& characters, map<string, map<string, int> >& ca
 			case 3:
 			{
 				int count = characters[word.substr(0, CHARWIDTH)];
-				v1 = candidates[word]["n"] * candidates[word]["n"] * 1.0f / (count * candidates[word.substr(CHARWIDTH, CHARWIDTH*2)]);
+				v1 = candidates[word]["n"] * candidates[word]["n"] * 1.0f / (count * candidates[word.substr(CHARWIDTH, CHARWIDTH*2)]["n"]);
 				count = characters[word.substr(2*CHARWIDTH, CHARWIDTH)];
-				v2 = candidates[word]["n"] * candidates[word]["n"] * 1.0f / (candidates[word.substr(0, 2*CHARWIDTH)] * count);
+				v2 = candidates[word]["n"] * candidates[word]["n"] * 1.0f / (candidates[word.substr(0, 2*CHARWIDTH)]["n"] * count);
 				candidates[word]["c"] = v1 < v2 ? (int)(1000000*v1) : (int)(1000000*v2);
 			}
 			case 4:
-			v1 = candidates[word]["n"] * candidates[word]["n"] * 1.0f / (characters[word.substr(0, CHARWIDTH)] * candidats[word.substr(CHARWIDTH, 3*CHARWIDTH)]);
-			v2 = candidates[word]["n"] * candidates[word]["n"] * 1.0f / (characters[word.substr(0, 3*CHARWIDTH)] * candidats[word.substr(3*CHARWIDTH, CHARWIDTH)]);
-			candidates[word]["c"] = candidates[word]["n"] * candidates[word]["n"] * 1000000 / (characters[word.substr(0, 2*CHARWIDTH)] * candidats[word.substr(2*CHARWIDTH, 2*CHARWIDTH)]);
+			v1 = candidates[word]["n"] * candidates[word]["n"] * 1.0f / (characters[word.substr(0, CHARWIDTH)] * candidates[word.substr(CHARWIDTH, 3*CHARWIDTH)]["n"]);
+			v2 = candidates[word]["n"] * candidates[word]["n"] * 1.0f / (characters[word.substr(0, 3*CHARWIDTH)] * candidates[word.substr(3*CHARWIDTH, CHARWIDTH)]["n"]);
+			candidates[word]["c"] = candidates[word]["n"] * candidates[word]["n"] * 1000000 / (characters[word.substr(0, 2*CHARWIDTH)] * candidates[word.substr(2*CHARWIDTH, 2*CHARWIDTH)]["n"]);
 			if (v1 > v2)
 				v1 = v2;
 			if (candidates[word]["c"] > v1)
 				candidates[word]["c"] = (int)(1000000*v1);
 		}
+		candidates[word]["c"] = sqrt(candidates[word]["c"]);
 	}
-	candidates[word]["c"] = sqrt(candidates[word]["c"]);
+	return 0;
+}
+
+int calfreedegree(map<string, map<string, int> >& candidates)
+{
+	map<string, map<string, int> >::iterator iter;
+	for (iter = candidates.begin(); iter != candidates.end(); iter++) {	   
+	   map<string, int> nc = iter->second;
+	   map<string, int>::iterator cit;
+	   float lce = 0.0f, rce = 0.0f;
+	   for (cit = nc.begin(); cit != nc.end(); cit++) {
+		   if (!cit->first.compare("n") || !cit->first.compare("c"))
+			   continue;
+		   if (cit->second < 0)
+			   lce -= -cit->second/nc["n"] * (float)log(-cit->second/nc["n"]);
+		   else
+			   rce -= cit->second/nc["n"] * (float)log(cit->second/nc["n"]);
+	   }
+	   candidates[iter->first]["f"] = lce < rce? (int)(1000*lce) : (int)(rce*1000);
+	}
 	return 0;
 }
 
@@ -146,6 +167,8 @@ int main(int argc, char *argv[])
 		generatecandidates(characters, candidates, buf);
 		memset(buf, 0, BUFSIZ);
 	}
+	calcohesion(characters, candidates);
+	calfreedegree(candidates);
 	
 	return 0;
 }
